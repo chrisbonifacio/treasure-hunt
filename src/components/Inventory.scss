@@ -1,0 +1,16 @@
+.inventory {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: absolute;
+  right: 50%;
+  padding: 20px;
+  width: 150px;
+
+  ul {
+    list-style: none;
+    li {
+      margin: 10px 0;
+    }
+  }
+}
