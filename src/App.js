@@ -13,7 +13,8 @@ export default function App() {
   const player = useSelector(state => state.player)
   const map = useSelector(state => state.map)
 
-  console.log(map)
+  console.log("ROOMS FOUND:", Object.keys(map).length)
+  console.log("MAP:", map)
 
   // find nearest unexplored room
   function pathToUnexplored(currentRoom) {
@@ -36,7 +37,6 @@ export default function App() {
       // check if room contains unexplored exit
       if (Object.values(map[room]).includes("?")) {
         dispatch({ type: "GET_PATH", payload: path })
-        pathToZero(player.room_id)
         return path
       }
 
@@ -56,7 +56,7 @@ export default function App() {
 
   // get path back to room Zero
   // find nearest unexplored room
-  function pathToZero(currentRoom) {
+  function pathToZero(currentRoom, targetRoom = 0) {
     // create queue
     let queue = []
 
@@ -73,7 +73,7 @@ export default function App() {
       let room = path[path.length - 1]
 
       // check if room contains unexplored exit
-      if (room === 0) {
+      if (room === targetRoom) {
         dispatch({ type: "GET_PATH_TO_ZERO", payload: path })
         return path
       }
@@ -83,9 +83,11 @@ export default function App() {
         // enumerate all adjacent nodes, construct a new path and push it into the queue
 
         for (let neighbor of Object.values(map[room])) {
-          let new_path = [...path]
-          new_path.push(neighbor)
-          queue.push(new_path)
+          if (neighbor !== "?") {
+            let new_path = [...path]
+            new_path.push(neighbor)
+            queue.push(new_path)
+          }
         }
         visited.add(room)
       }
@@ -130,8 +132,6 @@ export default function App() {
     newMap[nextRoom][opposite[direction]] = prevRoom
 
     dispatch({ type: "GRAPH_MAP", payload: newMap })
-
-    pathToUnexplored(player.room_id)
   }
 
   // move
@@ -142,18 +142,19 @@ export default function App() {
       try {
         const prevRoom = player.room_id
 
-        if (!map[player.room_id][direction]) {
+        const nextRoomExplored = map[player.room_id][direction]
+
+        if (nextRoomExplored !== "?") {
+          response = await axiosWithAuth().post("/adv/move", {
+            direction: direction,
+            next_room_id: String(nextRoomExplored)
+          })
+          console.log("traveled wisely")
+        } else {
           response = await axiosWithAuth().post("/adv/move", {
             direction: direction
           })
           console.log("traveled foolishly")
-        } else {
-          const nextRoomID = map[player.room_id][direction]
-          response = await axiosWithAuth().post("/adv/move", {
-            direction: direction,
-            next_room_id: String(nextRoomID)
-          })
-          console.log("traveled wisely")
         }
 
         dispatch({ type: "MOVE", payload: response.data })
@@ -211,6 +212,20 @@ export default function App() {
     }
   }
 
+  // buy donuts
+  async function buyDonut() {
+    try {
+      const response = await axiosWithAuth().post("/adv/buy", {
+        name: "donut",
+        confirm: "yes"
+      })
+      dispatch({ type: "BUY_DONUT", payload: response.data })
+      console.log(response.data)
+    } catch (error) {
+      console.log("Sell Error:", error)
+    }
+  }
+
   return (
     <div className="App">
       <div className="container">
@@ -218,9 +233,9 @@ export default function App() {
           Initialize Player
         </button>
         {/* <Map /> */}
-        <Inventory sell={sell} />
-        <Status />
-        <Controls move={move} take={take} drop={drop} sell={sell} />
+        <Inventory sell={sell} drop={drop} />
+        <Status pathToUnexplored={pathToUnexplored} pathToZero={pathToZero} />
+        <Controls move={move} take={take} drop={drop} buyDonut={buyDonut} />
       </div>
     </div>
   )
