@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from "react-redux"
 import axiosWithAuth from "../utils/axiosWithAuth"
 import "./Inventory.scss"
 
-export default function Inventory({ sell }) {
+export default function Inventory({ sell, drop }) {
   const dispatch = useDispatch()
   const status = useSelector(state => state.inventory)
 
@@ -39,6 +39,7 @@ export default function Inventory({ sell }) {
             <li>
               {item}
               <button onClick={() => sell(item)}>sell</button>
+              <button onClick={() => drop(item)}>drop</button>
             </li>
           )
         })}
