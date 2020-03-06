@@ -7,9 +7,12 @@ import {
   GRAPH_MAP,
   TAKE_TREASURE,
   SELL_TREASURE,
+  BUY_DONUT,
   GET_INVENTORY,
   GET_PATH,
-  GET_PATH_TO_ZERO
+  GET_PATH_TO_ZERO,
+  UPDATE_COOLDOWN,
+  GET_PROOF
 } from "../actions"
 
 const initialState = {
@@ -43,6 +46,8 @@ const initialState = {
   path: JSON.parse(localStorage.getItem("path")) || [],
   pathToZero: JSON.parse(localStorage.getItem("pathToZero")) || [],
   cooldown: 0,
+  proof: 0,
+  difficulty: 1,
   error: false
 }
 
@@ -55,6 +60,12 @@ export function rootReducer(state = initialState, action) {
 
     case INIT_FAILURE:
       return { ...state, error: true }
+
+    case UPDATE_COOLDOWN:
+      let coolDownState = { ...state }
+      coolDownState.player.cooldown -= 1
+
+      return coolDownState
 
     case MOVE:
       localStorage.setItem("player", JSON.stringify(action.payload))
@@ -72,7 +83,6 @@ export function rootReducer(state = initialState, action) {
       return { ...state, path: action.payload }
 
     case GET_PATH_TO_ZERO:
-      console.log("getting path to zero")
       localStorage.setItem("pathToZero", JSON.stringify(action.payload))
       return { ...state, pathToZero: action.payload }
 
@@ -86,9 +96,23 @@ export function rootReducer(state = initialState, action) {
 
       return { ...state, player: action.payload }
 
+    case BUY_DONUT:
+      localStorage.setItem("player", JSON.stringify(action.payload))
+      return { ...state, player: action.payload }
+
     case GET_INVENTORY:
       localStorage.setItem("inventory", JSON.stringify(action.payload))
       return { ...state, inventory: action.payload }
+    case GET_PROOF:
+      localStorage.setItem("proof", action.payload.proof)
+      localStorage.setItem("difficulty", action.payload.difficulty)
+
+      const newProofState = { ...state }
+      newProofState.proof = action.payload.proof
+      newProofState.difficulty = action.payload.proof
+
+      return newProofState
+
     default:
       return state
   }
