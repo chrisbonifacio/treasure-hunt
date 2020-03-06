@@ -3,12 +3,13 @@ import { useSelector, useDispatch } from "react-redux"
 
 import "./Status.scss"
 
-export default function Status() {
+export default function Status({ pathToUnexplored, pathToZero }) {
   const dispatch = useDispatch()
   const player = useSelector(state => state.player)
-  const cd = useSelector(state => state.player.cooldown)
-  const path = useSelector(state => state.path)
-  const pathToZero = useSelector(state => state.pathToZero)
+  const cooldown = useSelector(state => state.player.cooldown)
+  const map = useSelector(state => state.map)
+
+  // const [cd, setCD] = useState(99)
 
   return (
     <div className="status">
@@ -21,9 +22,19 @@ export default function Status() {
           )
         }
       })}
-      <p>Path to Unexplored: {path.join(", ")}</p>
-      <p>Path to Zero: {pathToZero.join(", ")}</p>
-      <p>Cooldown: {cd}</p>
+      <p>
+        Path to Unexplored:
+        {map[player.room_id] && pathToUnexplored(player.room_id).join(", ")}
+      </p>
+      <p>
+        Path to Zero:
+        {map[player.room_id] && pathToZero(player.room_id, 0).join(", ")}
+      </p>
+      <p>
+        Path to Well:
+        {map[player.room_id] && pathToZero(player.room_id, 55).join(", ")}
+      </p>
+      <p>Cooldown: {cooldown}</p>
     </div>
   )
 }
